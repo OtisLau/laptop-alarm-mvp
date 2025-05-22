@@ -4,13 +4,23 @@ const { contextBridge, ipcRenderer } = require('electron');
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld(
   'alarmAPI', {
-    setAlarm: (time) => ipcRenderer.invoke('set-alarm', time),
-    cancelAlarm: () => ipcRenderer.invoke('cancel-alarm'),
+    // System control
+    armSystem: (settings) => ipcRenderer.invoke('arm-system', settings),
+    disarmSystem: () => ipcRenderer.invoke('disarm-system'),
+    verifyDisarmPassword: (password) => ipcRenderer.invoke('verify-disarm-password', password),
+    
+    // Event listeners
+    onMotionDetected: (callback) => {
+      ipcRenderer.on('motion-detected', () => callback());
+    },
     onAlarmTrigger: (callback) => {
-      ipcRenderer.on('alarm-triggered', callback);
-      return () => {
-        ipcRenderer.removeListener('alarm-triggered', callback);
-      };
+      ipcRenderer.on('alarm-triggered', () => callback());
+    },
+    onArmingCountdown: (callback) => {
+      ipcRenderer.on('arming-countdown', (_, timeLeft) => callback(timeLeft));
+    },
+    onArmingComplete: (callback) => {
+      ipcRenderer.on('arming-complete', () => callback());
     }
   }
 ); 

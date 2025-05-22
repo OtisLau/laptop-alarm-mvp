@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Laptop Alarm</title>
+    <title>Laptop Security System</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -11,7 +11,7 @@
             background-color: #f5f5f5;
         }
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             background-color: white;
             padding: 20px;
@@ -21,18 +21,44 @@
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 20px;
         }
-        .alarm-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
-        input[type="datetime-local"] {
+        .webcam-section {
+            grid-column: 1;
+        }
+        .controls-section {
+            grid-column: 2;
+        }
+        #webcamFeed {
+            width: 100%;
+            border-radius: 8px;
+            background-color: #000;
+            margin-bottom: 10px;
+        }
+        .control-group {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .control-group h2 {
+            margin-top: 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+        input[type="password"],
+        input[type="email"] {
+            width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
+            margin-bottom: 10px;
         }
         button {
             padding: 10px 20px;
@@ -43,6 +69,8 @@
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.2s;
+            width: 100%;
+            margin-bottom: 10px;
         }
         button:hover {
             background-color: #0056b3;
@@ -56,75 +84,371 @@
             padding: 10px;
             border-radius: 4px;
             text-align: center;
+            font-weight: bold;
         }
-        .active {
-            background-color: #e3f2fd;
-            color: #1976d2;
+        .armed {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .disarmed {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .warning {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #c62828;
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
+        .password-input {
+            display: none;
+            margin-top: 10px;
+        }
+        .sensitivity-control {
+            margin-top: 10px;
+        }
+        .sensitivity-control label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .sensitivity-value {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+        .arming-countdown {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 4px;
+            color: #856404;
+            text-align: center;
+            font-weight: bold;
+        }
+        #countdown-number {
+            font-size: 1.2em;
+            color: #dc3545;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Laptop Alarm</h1>
-        <div class="alarm-controls">
-            <input type="datetime-local" id="alarmTime">
-            <button id="setAlarm">Set Alarm</button>
-            <button id="cancelAlarm" disabled>Cancel Alarm</button>
+        <h1>Laptop Security System</h1>
+        <div class="main-content">
+            <div class="webcam-section">
+                <video id="webcamFeed" autoplay playsinline></video>
+                <div class="control-group">
+                    <h2>Webcam Controls</h2>
+                    <button id="startWebcam">Start Webcam</button>
+                    <button id="stopWebcam" disabled>Stop Webcam</button>
+                </div>
+            </div>
+            <div class="controls-section">
+                <div class="control-group">
+                    <h2>Security Settings</h2>
+                    <input type="password" id="securityPassword" placeholder="Set security password">
+                    <input type="email" id="emailAddress" placeholder="Email for alerts">
+                    <div class="sensitivity-control">
+                        <label for="sensitivity">Motion Detection Sensitivity:</label>
+                        <input type="range" id="sensitivity" min="1" max="100" value="50">
+                        <div class="sensitivity-value">50%</div>
+                    </div>
+                    <button id="armSystem" disabled>Arm System</button>
+                    <button id="disarmSystem" disabled>Disarm System</button>
+                </div>
+                <div id="countdown" class="countdown"></div>
+                <div id="passwordPrompt" class="password-input">
+                    <input type="password" id="disarmPassword" placeholder="Enter password to disarm">
+                    <button id="confirmDisarm">Confirm</button>
+                </div>
+                <div id="status" class="status disarmed">System Disarmed</div>
+                <div id="arming-countdown" class="arming-countdown" style="display: none;">
+                    Arming in <span id="countdown-number">5</span> seconds...
+                </div>
+            </div>
         </div>
-        <div id="status" class="status"></div>
     </div>
 
     <script>
-        const alarmTimeInput = document.getElementById('alarmTime');
-        const setAlarmButton = document.getElementById('setAlarm');
-        const cancelAlarmButton = document.getElementById('cancelAlarm');
+        // DOM Elements
+        const webcamFeed = document.getElementById('webcamFeed');
+        const startWebcamBtn = document.getElementById('startWebcam');
+        const stopWebcamBtn = document.getElementById('stopWebcam');
+        const securityPasswordInput = document.getElementById('securityPassword');
+        const emailAddressInput = document.getElementById('emailAddress');
+        const sensitivityInput = document.getElementById('sensitivity');
+        const sensitivityValue = document.querySelector('.sensitivity-value');
+        const armSystemBtn = document.getElementById('armSystem');
+        const disarmSystemBtn = document.getElementById('disarmSystem');
+        const countdownDiv = document.getElementById('countdown');
+        const passwordPromptDiv = document.getElementById('passwordPrompt');
+        const disarmPasswordInput = document.getElementById('disarmPassword');
+        const confirmDisarmBtn = document.getElementById('confirmDisarm');
         const statusDiv = document.getElementById('status');
 
-        let alarmActive = false;
+        let webcamStream = null;
+        let isArmed = false;
+        let isCountingDown = false;
+        let countdownInterval = null;
+        let disarmTimeout = null;
 
-        setAlarmButton.addEventListener('click', async () => {
-            const time = alarmTimeInput.value;
-            if (!time) {
-                statusDiv.textContent = 'Please select a time';
+        // Update sensitivity value display
+        sensitivityInput.addEventListener('input', () => {
+            sensitivityValue.textContent = `${sensitivityInput.value}%`;
+        });
+
+        // Webcam Controls
+        startWebcamBtn.addEventListener('click', async () => {
+            try {
+                webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                webcamFeed.srcObject = webcamStream;
+                startWebcamBtn.disabled = true;
+                stopWebcamBtn.disabled = false;
+                armSystemBtn.disabled = false;
+                statusDiv.textContent = 'Webcam started - Ready to arm';
+                statusDiv.className = 'status disarmed';
+            } catch (error) {
+                statusDiv.textContent = 'Failed to start webcam: ' + error.message;
+            }
+        });
+
+        stopWebcamBtn.addEventListener('click', () => {
+            if (webcamStream) {
+                webcamStream.getTracks().forEach(track => track.stop());
+                webcamFeed.srcObject = null;
+                webcamStream = null;
+                startWebcamBtn.disabled = false;
+                stopWebcamBtn.disabled = true;
+                armSystemBtn.disabled = true;
+                disarmSystemBtn.disabled = true;
+                if (isArmed) {
+                    disarmSystem();
+                }
+                statusDiv.textContent = 'Webcam stopped';
+                statusDiv.className = 'status';
+            }
+        });
+
+        // Arm/Disarm Controls
+        armSystemBtn.addEventListener('click', async () => {
+            const password = securityPasswordInput.value;
+            const email = emailAddressInput.value;
+
+            if (!password) {
+                statusDiv.textContent = 'Please set a security password';
+                statusDiv.className = 'status warning';
+                return;
+            }
+
+            if (!email) {
+                statusDiv.textContent = 'Please enter an email address for alerts';
+                statusDiv.className = 'status warning';
                 return;
             }
 
             try {
-                await window.alarmAPI.setAlarm(time);
-                alarmActive = true;
+                armSystemBtn.disabled = true;
+                statusDiv.textContent = 'Starting arming sequence...';
+                statusDiv.className = 'status warning';
+                
+                await window.alarmAPI.armSystem({
+                    password,
+                    email,
+                    sensitivity: sensitivityInput.value
+                });
+                
+                // Note: The actual armed state will be set by onArmingComplete
                 updateUI();
-                statusDiv.textContent = `Alarm set for ${new Date(time).toLocaleString()}`;
-                statusDiv.className = 'status active';
             } catch (error) {
-                statusDiv.textContent = 'Failed to set alarm';
+                statusDiv.textContent = 'Failed to arm system: ' + error.message;
+                statusDiv.className = 'status warning';
+                armSystemBtn.disabled = false;
             }
         });
 
-        cancelAlarmButton.addEventListener('click', async () => {
-            try {
-                await window.alarmAPI.cancelAlarm();
-                alarmActive = false;
-                updateUI();
-                statusDiv.textContent = 'Alarm cancelled';
-                statusDiv.className = 'status';
-            } catch (error) {
-                statusDiv.textContent = 'Failed to cancel alarm';
+        disarmSystemBtn.addEventListener('click', () => {
+            if (isArmed) {
+                // Show password prompt immediately
+                passwordPromptDiv.style.display = 'block';
+                disarmPasswordInput.value = '';
+                disarmPasswordInput.focus();
+                statusDiv.textContent = 'Enter password to disarm system';
+                statusDiv.className = 'status warning';
             }
         });
+
+        confirmDisarmBtn.addEventListener('click', async () => {
+            const password = disarmPasswordInput.value;
+            if (!password) {
+                statusDiv.textContent = 'Please enter the password';
+                statusDiv.className = 'status warning';
+                return;
+            }
+
+            try {
+                const success = await window.alarmAPI.verifyDisarmPassword(password);
+                if (success) {
+                    await disarmSystem();
+                } else {
+                    statusDiv.textContent = 'Incorrect password! Try again';
+                    statusDiv.className = 'status warning';
+                    disarmPasswordInput.value = '';  // Clear the password field
+                    disarmPasswordInput.focus();     // Focus back on the input
+                }
+            } catch (error) {
+                console.error('Disarm error:', error);
+                statusDiv.textContent = 'Failed to disarm: ' + error.message;
+                statusDiv.className = 'status warning';
+            }
+        });
+
+        // Add enter key support for password input
+        disarmPasswordInput.addEventListener('keypress', async (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                await confirmDisarmBtn.click();
+            }
+        });
+
+        async function disarmSystem() {
+            try {
+                await window.alarmAPI.disarmSystem();
+                isArmed = false;
+                isCountingDown = false;
+                updateUI();
+                statusDiv.textContent = 'System Disarmed Successfully';
+                statusDiv.className = 'status disarmed';
+                clearDisarmCountdown();
+                passwordPromptDiv.style.display = 'none';  // Hide the password prompt
+                disarmPasswordInput.value = '';  // Clear the password field
+            } catch (error) {
+                console.error('Disarm system error:', error);
+                statusDiv.textContent = 'Failed to disarm system: ' + error.message;
+                statusDiv.className = 'status warning';
+            }
+        }
+
+        function startDisarmCountdown() {
+            if (isCountingDown) return;
+            
+            let timeLeft = 10;
+            isCountingDown = true;
+            countdownDiv.style.display = 'block';
+            passwordPromptDiv.style.display = 'block';
+            disarmPasswordInput.value = '';
+            disarmPasswordInput.focus();
+            statusDiv.textContent = `Motion detected! Enter password to disarm (${timeLeft}s)`;
+            statusDiv.className = 'status warning';
+
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            if (disarmTimeout) {
+                clearTimeout(disarmTimeout);
+            }
+
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                countdownDiv.textContent = `Time to disarm: ${timeLeft}s`;
+                statusDiv.textContent = `Motion detected! Enter password to disarm (${timeLeft}s)`;
+                if (timeLeft <= 0) {
+                    clearDisarmCountdown();
+                    triggerAlarm();
+                }
+            }, 1000);
+
+            disarmTimeout = setTimeout(() => {
+                clearDisarmCountdown();
+                triggerAlarm();
+            }, 10000);
+        }
+
+        function clearDisarmCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            if (disarmTimeout) {
+                clearTimeout(disarmTimeout);
+                disarmTimeout = null;
+            }
+            isCountingDown = false;
+            countdownDiv.style.display = 'none';
+            passwordPromptDiv.style.display = 'none';
+        }
 
         function updateUI() {
-            setAlarmButton.disabled = alarmActive;
-            cancelAlarmButton.disabled = !alarmActive;
-            alarmTimeInput.disabled = alarmActive;
+            armSystemBtn.disabled = isArmed || !webcamStream;
+            disarmSystemBtn.disabled = !isArmed;
+            securityPasswordInput.disabled = isArmed;
+            emailAddressInput.disabled = isArmed;
+            sensitivityInput.disabled = isArmed;
+            
+            // Hide password prompt when system is disarmed
+            if (!isArmed) {
+                passwordPromptDiv.style.display = 'none';
+            }
         }
+
+        // Listen for motion detection
+        window.alarmAPI.onMotionDetected(() => {
+            if (isArmed && !isCountingDown) {
+                isCountingDown = true;
+                statusDiv.textContent = 'Motion Detected!';
+                statusDiv.className = 'status warning';
+                startDisarmCountdown();
+            }
+        });
 
         // Listen for alarm triggers
         window.alarmAPI.onAlarmTrigger(() => {
             statusDiv.textContent = 'ALARM TRIGGERED!';
-            statusDiv.className = 'status active';
-            alarmActive = false;
+            statusDiv.className = 'status armed';
+            isArmed = false;
+            updateUI();
+            clearDisarmCountdown();
+        });
+
+        // Listen for arming countdown
+        window.alarmAPI.onArmingCountdown((timeLeft) => {
+            const countdownDiv = document.getElementById('arming-countdown');
+            const countdownNumber = document.getElementById('countdown-number');
+            countdownDiv.style.display = 'block';
+            countdownNumber.textContent = timeLeft;
+            statusDiv.textContent = `Arming in ${timeLeft} seconds...`;
+            statusDiv.className = 'status warning';
+        });
+
+        // Listen for arming complete
+        window.alarmAPI.onArmingComplete(() => {
+            const countdownDiv = document.getElementById('arming-countdown');
+            countdownDiv.style.display = 'none';
+            statusDiv.textContent = 'System Armed';
+            statusDiv.className = 'status armed';
+            isArmed = true;
             updateUI();
         });
+
+        function triggerAlarm() {
+            statusDiv.textContent = 'ALARM TRIGGERED!';
+            statusDiv.className = 'status armed';
+            isArmed = false;
+            updateUI();
+            clearDisarmCountdown();
+            // Notify the main process to trigger the alarm
+            window.alarmAPI.triggerAlarm('Motion detected and not disarmed in time');
+        }
     </script>
 </body>
 </html> 

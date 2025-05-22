@@ -1,16 +1,20 @@
 {
   "name": "laptop-alarm",
   "version": "1.0.0",
+  "description": "A laptop alarm system with motion detection and email alerts",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --debug"
+    "debug": "electron . --debug"
   },
-  "keywords": ["electron", "alarm", "security"],
   "author": "",
   "license": "ISC",
-  "description": "A laptop alarm system built with Electron",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "electron": "^28.0.0",
+    "nodemailer": "^6.9.7"
+  },
   "devDependencies": {
-    "electron": "^36.3.0"
+    "electron-builder": "^24.9.1"
   }
 }
