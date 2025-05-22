@@ -1,0 +1,16 @@
+{
+  "name": "laptop-alarm",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --debug"
+  },
+  "keywords": ["electron", "alarm", "security"],
+  "author": "",
+  "license": "ISC",
+  "description": "A laptop alarm system built with Electron",
+  "devDependencies": {
+    "electron": "^36.3.0"
+  }
+}

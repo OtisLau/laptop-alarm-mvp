@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Laptop Alarm</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .alarm-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        input[type="datetime-local"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007AFF;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .active {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Laptop Alarm</h1>
+        <div class="alarm-controls">
+            <input type="datetime-local" id="alarmTime">
+            <button id="setAlarm">Set Alarm</button>
+            <button id="cancelAlarm" disabled>Cancel Alarm</button>
+        </div>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        const alarmTimeInput = document.getElementById('alarmTime');
+        const setAlarmButton = document.getElementById('setAlarm');
+        const cancelAlarmButton = document.getElementById('cancelAlarm');
+        const statusDiv = document.getElementById('status');
+
+        let alarmActive = false;
+
+        setAlarmButton.addEventListener('click', async () => {
+            const time = alarmTimeInput.value;
+            if (!time) {
+                statusDiv.textContent = 'Please select a time';
+                return;
+            }
+
+            try {
+                await window.alarmAPI.setAlarm(time);
+                alarmActive = true;
+                updateUI();
+                statusDiv.textContent = `Alarm set for ${new Date(time).toLocaleString()}`;
+                statusDiv.className = 'status active';
+            } catch (error) {
+                statusDiv.textContent = 'Failed to set alarm';
+            }
+        });
+
+        cancelAlarmButton.addEventListener('click', async () => {
+            try {
+                await window.alarmAPI.cancelAlarm();
+                alarmActive = false;
+                updateUI();
+                statusDiv.textContent = 'Alarm cancelled';
+                statusDiv.className = 'status';
+            } catch (error) {
+                statusDiv.textContent = 'Failed to cancel alarm';
+            }
+        });
+
+        function updateUI() {
+            setAlarmButton.disabled = alarmActive;
+            cancelAlarmButton.disabled = !alarmActive;
+            alarmTimeInput.disabled = alarmActive;
+        }
+
+        // Listen for alarm triggers
+        window.alarmAPI.onAlarmTrigger(() => {
+            statusDiv.textContent = 'ALARM TRIGGERED!';
+            statusDiv.className = 'status active';
+            alarmActive = false;
+            updateUI();
+        });
+    </script>
+</body>
+</html> 
