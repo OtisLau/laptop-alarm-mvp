@@ -4,177 +4,371 @@
     <meta charset="UTF-8">
     <title>Laptop Security System</title>
     <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.5;
         }
+
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 2rem;
         }
-        h1 {
-            color: #333;
+
+        .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 2rem;
         }
+
+        h1 {
+            color: var(--text-color);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
         .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 2rem;
+            margin-bottom: 2rem;
         }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 1.25rem;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+        }
+
         .webcam-section {
             grid-column: 1;
         }
+
         .controls-section {
             grid-column: 2;
         }
+
         #webcamFeed {
             width: 100%;
             border-radius: 8px;
             background-color: #000;
-            margin-bottom: 10px;
+            margin-bottom: 1rem;
+            aspect-ratio: 16/9;
+            object-fit: cover;
         }
+
         .control-group {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 1.5rem;
         }
-        .control-group h2 {
-            margin-top: 0;
-            font-size: 1.2em;
-            color: #333;
+
+        .input-group {
+            margin-bottom: 1rem;
         }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
         input[type="password"],
         input[type="email"] {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            margin-bottom: 10px;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
         }
+
+        input[type="password"]:focus,
+        input[type="email"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
         button {
-            padding: 10px 20px;
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 4px;
-            background-color: #007AFF;
+            border-radius: 6px;
+            background-color: var(--primary-color);
             color: white;
-            font-size: 16px;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
             transition: background-color 0.2s;
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 0.75rem;
         }
+
         button:hover {
-            background-color: #0056b3;
+            background-color: var(--primary-hover);
         }
+
         button:disabled {
-            background-color: #ccc;
+            background-color: #94a3b8;
             cursor: not-allowed;
         }
+
         .status {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 1rem;
+            border-radius: 6px;
             text-align: center;
-            font-weight: bold;
+            font-weight: 500;
+            margin-top: 1rem;
         }
+
         .armed {
-            background-color: #ffebee;
-            color: #c62828;
+            background-color: #fee2e2;
+            color: var(--danger-color);
         }
+
         .disarmed {
-            background-color: #e8f5e9;
-            color: #2e7d32;
+            background-color: #dcfce7;
+            color: var(--success-color);
         }
+
         .warning {
-            background-color: #fff3e0;
-            color: #ef6c00;
+            background-color: #fef3c7;
+            color: var(--warning-color);
         }
+
         .countdown {
-            font-size: 24px;
+            font-size: 1.5rem;
             font-weight: bold;
-            color: #c62828;
+            color: var(--danger-color);
             text-align: center;
-            margin: 10px 0;
+            margin: 1rem 0;
             display: none;
         }
+
         .password-input {
             display: none;
-            margin-top: 10px;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border-radius: 6px;
         }
+
         .sensitivity-control {
-            margin-top: 10px;
+            margin-top: 1rem;
         }
+
         .sensitivity-control label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
         }
+
         input[type="range"] {
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 0.5rem;
         }
+
         .sensitivity-value {
             text-align: center;
-            font-size: 14px;
-            color: #666;
+            font-size: 0.875rem;
+            color: #64748b;
         }
+
         .arming-countdown {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 4px;
-            color: #856404;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 6px;
+            color: var(--warning-color);
             text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        #countdown-number {
+            font-size: 1.25rem;
+            color: var(--danger-color);
             font-weight: bold;
         }
-        #countdown-number {
-            font-size: 1.2em;
-            color: #dc3545;
+
+        .instructions {
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .instructions ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .instructions li {
+            margin-bottom: 0.75rem;
+        }
+
+        .laptop-position {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .laptop-position img {
+            width: 100px;
+            height: auto;
+        }
+
+        .laptop-position-text {
+            flex: 1;
+        }
+
+        .laptop-position-text p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .laptop-position-text strong {
+            color: var(--text-color);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Laptop Security System</h1>
+        <div class="header">
+            <h1>Laptop Security System</h1>
+            <p class="subtitle">Protect your laptop with motion detection and instant alerts</p>
+        </div>
+
         <div class="main-content">
             <div class="webcam-section">
-                <video id="webcamFeed" autoplay playsinline></video>
-                <div class="control-group">
-                    <h2>Webcam Controls</h2>
-                    <button id="startWebcam">Start Webcam</button>
-                    <button id="stopWebcam" disabled>Stop Webcam</button>
+                <div class="card">
+                    <h2>Webcam Feed</h2>
+                    <video id="webcamFeed" autoplay playsinline></video>
+                    <div class="control-group">
+                        <button id="startWebcam">Start Webcam</button>
+                        <button id="stopWebcam" disabled>Stop Webcam</button>
+                    </div>
+                    <div class="laptop-position">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjQ3NDhiIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTQgMTloMTZhMiAyIDAgMCAwIDItMlY3YTIgMiAwIDAgMC0yLTJINGEyIDIgMCAwIDAtMiAydjEwYTIgMiAwIDAgMCAyIDJ6Ii8+PHBhdGggZD0iTTggMTV2MGEyIDIgMCAwIDAgMiAyaDRhMiAyIDAgMCAwIDItMnYwIi8+PC9zdmc+" alt="Laptop Icon">
+                        <div class="laptop-position-text">
+                            <p><strong>Optimal Laptop Position:</strong> Close your laptop to about 45° angle for best motion detection. This position allows the webcam to monitor the area while being less sensitive to small movements.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <div class="controls-section">
-                <div class="control-group">
+                <div class="card">
                     <h2>Security Settings</h2>
-                    <input type="password" id="securityPassword" placeholder="Set security password">
-                    <input type="email" id="emailAddress" placeholder="Email for alerts">
+                    <div class="input-group">
+                        <label for="securityPassword">Security Password</label>
+                        <input type="password" id="securityPassword" placeholder="Set a password to disarm the system">
+                    </div>
+                    <div class="input-group">
+                        <label for="emailAddress">Email for Alerts</label>
+                        <input type="email" id="emailAddress" placeholder="Enter your email address">
+                    </div>
                     <div class="sensitivity-control">
-                        <label for="sensitivity">Motion Detection Sensitivity:</label>
+                        <label for="sensitivity">Motion Detection Sensitivity</label>
                         <input type="range" id="sensitivity" min="1" max="100" value="50">
                         <div class="sensitivity-value">50%</div>
                     </div>
                     <button id="armSystem" disabled>Arm System</button>
                     <button id="disarmSystem" disabled>Disarm System</button>
                 </div>
-                <div id="countdown" class="countdown"></div>
-                <div id="passwordPrompt" class="password-input">
-                    <input type="password" id="disarmPassword" placeholder="Enter password to disarm">
-                    <button id="confirmDisarm">Confirm</button>
+
+                <div class="card">
+                    <h2>System Status</h2>
+                    <div id="status" class="status disarmed">System Disarmed</div>
+                    <div id="arming-countdown" class="arming-countdown" style="display: none;">
+                        Arming in <span id="countdown-number">5</span> seconds...
+                    </div>
+                    <div id="countdown" class="countdown"></div>
+                    <div id="passwordPrompt" class="password-input">
+                        <div class="input-group">
+                            <label for="disarmPassword">Enter Password to Disarm</label>
+                            <input type="password" id="disarmPassword" placeholder="Enter your security password">
+                        </div>
+                        <button id="confirmDisarm">Confirm</button>
+                    </div>
                 </div>
-                <div id="status" class="status disarmed">System Disarmed</div>
-                <div id="arming-countdown" class="arming-countdown" style="display: none;">
-                    Arming in <span id="countdown-number">5</span> seconds...
+
+                <div class="card instructions">
+                    <h3>How to Use</h3>
+                    <ol>
+                        <li>Click "Start Webcam" to initialize the camera</li>
+                        <li>Set a security password and your email address</li>
+                        <li>Adjust the sensitivity if needed (lower = less sensitive)</li>
+                        <li>Position your laptop at about 45° angle</li>
+                        <li>Click "Arm System" and leave the area within 5 seconds</li>
+                        <li>If motion is detected, you'll receive an email alert</li>
+                        <li>You'll have 10 seconds to enter the password to disarm</li>
+                    </ol>
                 </div>
             </div>
         </div>
@@ -344,11 +538,11 @@
             
             let timeLeft = 10;
             isCountingDown = true;
-            countdownDiv.style.display = 'block';
+            countdownDiv.style.display = 'none';  // Hide the separate countdown div
             passwordPromptDiv.style.display = 'block';
             disarmPasswordInput.value = '';
             disarmPasswordInput.focus();
-            statusDiv.textContent = `Motion detected! Enter password to disarm (${timeLeft}s)`;
+            statusDiv.textContent = 'Motion Detected! Enter password to disarm (10s)';
             statusDiv.className = 'status warning';
 
             if (countdownInterval) {
@@ -360,8 +554,7 @@
 
             countdownInterval = setInterval(() => {
                 timeLeft--;
-                countdownDiv.textContent = `Time to disarm: ${timeLeft}s`;
-                statusDiv.textContent = `Motion detected! Enter password to disarm (${timeLeft}s)`;
+                statusDiv.textContent = `Motion Detected! Enter password to disarm (${timeLeft}s)`;
                 if (timeLeft <= 0) {
                     clearDisarmCountdown();
                     triggerAlarm();
@@ -386,6 +579,10 @@
             isCountingDown = false;
             countdownDiv.style.display = 'none';
             passwordPromptDiv.style.display = 'none';
+            if (!isArmed) {
+                statusDiv.textContent = 'System Disarmed';
+                statusDiv.className = 'status disarmed';
+            }
         }
 
         function updateUI() {
@@ -405,7 +602,7 @@
         window.alarmAPI.onMotionDetected(() => {
             if (isArmed && !isCountingDown) {
                 isCountingDown = true;
-                statusDiv.textContent = 'Motion Detected!';
+                statusDiv.textContent = 'Motion Detected! Owner has been notified';
                 statusDiv.className = 'status warning';
                 startDisarmCountdown();
             }
@@ -426,8 +623,6 @@
             const countdownNumber = document.getElementById('countdown-number');
             countdownDiv.style.display = 'block';
             countdownNumber.textContent = timeLeft;
-            statusDiv.textContent = `Arming in ${timeLeft} seconds...`;
-            statusDiv.className = 'status warning';
         });
 
         // Listen for arming complete
@@ -441,7 +636,7 @@
         });
 
         function triggerAlarm() {
-            statusDiv.textContent = 'ALARM TRIGGERED!';
+            statusDiv.textContent = 'ALARM TRIGGERED! Owner has been notified';
             statusDiv.className = 'status armed';
             isArmed = false;
             updateUI();
